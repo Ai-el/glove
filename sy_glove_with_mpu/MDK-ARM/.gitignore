@@ -1,0 +1,7 @@
+/startup_stm32f103xb.s
+/*.uvoptx
+/DebugConfig/
+/startup_stm32f103xb.lst
+*.uvguix.*
+/startup_stm32f103xb.lst
+/keilkill.bat

@@ -1,0 +1,29 @@
+{
+  "configurations": [
+    {
+      "name": "STM32",
+      "includePath": [
+        "Drivers/CMSIS/Device/ST/STM32F1xx/Include",
+        "Drivers/CMSIS/Include",
+        "Drivers/STM32F1xx_HAL_Driver/Inc",
+        "Drivers/STM32F1xx_HAL_Driver/Inc/Legacy",
+        "Inc",
+        "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS",
+        "Middlewares/Third_Party/FreeRTOS/Source/include",
+        "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3",
+        "Middlewares/Third_Party/motion_driver-5.1.3/core/driver",
+        "Middlewares/Third_Party/motion_driver-5.1.3/core/driver/eMPL",
+        "common/Inc"
+      ],
+      "defines": [
+        "EMPL_TARGET_SiYi_STM32",
+        "MPL_LOG_NDEBUG=1",
+        "MPU6050",
+        "STM32F103xB",
+        "USE_HAL_DRIVER"
+      ],
+      "compilerPath": "D:\\STM32FORVSCODE_TOOLS\\GCC-ARM-NONE-EABI-10.3-2021.10-WIN32\\GCC-ARM-NONE-EABI-10.3-2021.10\\BIN\\ARM-NONE-EABI-GCC.EXE"
+    }
+  ],
+  "version": 4
+}
