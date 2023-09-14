@@ -2,7 +2,7 @@
  * @Author: Aijw aijw@siyizn.com
  * @Date: 2023-09-01 09:04:31
  * @LastEditors: Aijw aijw@siyizn.com
- * @LastEditTime: 2023-09-14 09:11:24
+ * @LastEditTime: 2023-09-14 10:39:49
  * @FilePath: \sy_glove_with_mpu\Inc\MPL_task.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -64,5 +64,4 @@ void Start_MPL_task(void const * argument);
 extern osThreadId MPL_TaskHandle;
 
 
-void MPU_PRINT(void);
 #endif

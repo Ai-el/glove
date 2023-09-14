@@ -4,17 +4,8 @@
 float Pitch = 0,Roll=0,Yaw=0;
 float pitch_old, yaw_old;
 
-void MPU_PRINT(void)
-{
-	uint8_t string[50];
-	// sprintf(string,"Pitch = %.2f,Roll = %.2f,Yaw = %.2f\r\n",Pitch,Roll,Yaw);
-	sprintf(string,"Pitch = %.2f,Roll = %.2f,Yaw = %.2f\r\n",Pitch,Roll,Yaw);
-	HAL_UART_Transmit(&huart1, string, sizeof(string), 10);
-}
 
-
-
-
+uint32_t count,count_old;
 static struct hal_s hal = {0};
 
 static signed char gyro_orientation[9] = 
@@ -148,6 +139,9 @@ void Start_MPL_task(void const * argument)
 		osTimerId main_timer_id = osTimerCreate(osTimer(main_timer), osTimerPeriodic, &user_timer_info);
 		osTimerStart(main_timer_id, 10);
 		
+
+
+		count_old = osKernelSysTick();
 		for(;;)
 		{
 			osSignalWait(SIG_USER_TIMER, osWaitForever);
@@ -203,6 +197,14 @@ void Start_MPL_task(void const * argument)
 			 * the body frame, q30. The orientation is set by the scalar passed
 			 * to dmp_set_orientation during initialization.
 			 */
+		 	count = osKernelSysTick();
+
+			if(count - count_old < 40)
+			{
+				continue;	
+			}
+
+			count_old = count;
 			if (sensors & INV_WXYZ_QUAT && hal.report & PRINT_QUAT)
 			{
 				long data[3];
@@ -211,8 +213,10 @@ void Start_MPL_task(void const * argument)
 				Roll = data[1]*1.0 / (1 << 16);
 				Yaw = data[2]*1.0 / (1 << 16);
 				int8_t	rep[2];
-				rep[0] = (int8_t)(yaw_old - Yaw) * 11;
-				rep[1] = (int8_t)(pitch_old - Pitch) * 11;
+				rep[0] = ((yaw_old - Yaw) * 11);
+				rep[1] = ((pitch_old - Pitch) * 11);
+				
+
 				
 				struct imu_motion_distance_t *distance = SerialDatagramEvtAlloc(sizeof (*distance));
 				if(distance){

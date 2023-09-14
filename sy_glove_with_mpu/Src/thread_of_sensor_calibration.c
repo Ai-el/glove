@@ -191,7 +191,7 @@ void thread_of_sensor_calibration(void const *argument)
 				struct rawdata_tx_cmd_t *rawdata_tx_p = SerialDatagramEvtAlloc(sizeof(*rawdata_tx_p));
 				if (rawdata_tx_p)
 				{
-					SERIAL_DATAGRAM_INIT((*rawdata_tx_p), rawdata_tx_cmd);
+					SERIAL_DATAGRAM_INIT((*rawdata_tx_p), rawdata_tx_cmd);//rawdata_tx_cmd
 					uint8_t i;
 					for (i = 0; i < 5; i++)
 					{
