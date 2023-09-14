@@ -1,8 +1,19 @@
 #include "MPL_task.h"
+#include "usart.h"
 
-
-float Pitch,Roll,Yaw;
+float Pitch = 0,Roll=0,Yaw=0;
 float pitch_old, yaw_old;
+
+void MPU_PRINT(void)
+{
+	uint8_t string[50];
+	// sprintf(string,"Pitch = %.2f,Roll = %.2f,Yaw = %.2f\r\n",Pitch,Roll,Yaw);
+	sprintf(string,"Pitch = %.2f,Roll = %.2f,Yaw = %.2f\r\n",Pitch,Roll,Yaw);
+	HAL_UART_Transmit(&huart1, string, sizeof(string), 10);
+}
+
+
+
 
 static struct hal_s hal = {0};
 
@@ -216,7 +227,7 @@ void Start_MPL_task(void const * argument)
 				
 				pitch_old = Pitch;
 				yaw_old = Yaw;
-//				MPU_INFO("%.4f %.4f %.4f\r\n",Pitch, Roll, Yaw);
+				// MPU_INFO("%.4f %.4f %.4f\r\n",Pitch, Roll, Yaw);
 			}
 		}
 	}

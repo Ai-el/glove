@@ -166,20 +166,20 @@ void MX_FREERTOS_Init(void) {
 
 	init_MPL_task();
 	
-	if(init_thread_of_host_uart_tx())
-	{
-		for(;;);
-	}
+	// if(init_thread_of_host_uart_tx())
+	// {
+	// 	for(;;);
+	// }
 	
-	if(init_thread_of_host_uart_rx())
-	{
-		for(;;);
-	}
+	// if(init_thread_of_host_uart_rx())
+	// {
+	// 	for(;;);
+	// }
 	
-	if(init_thread_of_sensor_calibration())
-	{
-		for(;;);
-	}
+	// if(init_thread_of_sensor_calibration())
+	// {
+	// 	for(;;);
+	// }
 	
 	
 	
@@ -201,8 +201,10 @@ void StartDefaultTask(void const * argument)
   for(;;)
   {
 //		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-		// uint8_t string[] = "hello\n";
+		// uint8_t string[] = "hello\r\n";
 		// HAL_UART_Transmit(&huart1, string, sizeof(string), 10);
+
+    MPU_PRINT();
     osDelay(100);
 //		user_signal_info_t timer_arg = {osThreadGetId(), SIG_USER_TIMER};
 //		osTimerDef(myTimer01, Callback01);
