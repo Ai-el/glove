@@ -87,7 +87,22 @@ void thread_of_host_uart_rx(void const *argument)
 		size_t datagram_len;
 		size_t buf_size;
 		size_t skipped_count;
-		for (;;)
+
+		while (1)
+		{
+			int ret = get_raw_datagram_from_serial(buf, sizeof buf, &buf_size, &skipped_count);
+
+			uart_tx(buf,buf_size);
+
+			memcpy(datagram,buf,buf_size);
+			// sscanf((char *)buf, "%02X", (uint8_t *)datagram);
+
+			uart_tx(datagram,buf_size);
+
+
+		}
+
+		while (0)
 		{
 			int ret = get_raw_datagram_from_serial(buf, sizeof buf, &buf_size, &skipped_count);
 			if (!ret)
@@ -116,11 +131,11 @@ void thread_of_host_uart_rx(void const *argument)
 
 			size_t i = 0;
 			const struct uart_head_t *head = (const struct uart_head_t *)datagram;
-						// switch(head->type){
-						// 	case calibration_cmd:
-						// 		osSignalSet(tid_thread_of_sensor_calibration,SIG_USER_0);
-						// 	break;
-						// }
+			// switch(head->type){
+			// 	case calibration_cmd:
+			// 		osSignalSet(tid_thread_of_sensor_calibration,SIG_USER_0);
+			// 	break;
+			// }
 			for (i = 0; i < 1; i++)
 			{
 				if (head->type == msg_process_func_list[i].id)
@@ -168,20 +183,19 @@ int host_uart_datagram_send(void *msg, const size_t msg_len)
 	int ret;
 
 	if (*(uint8_t *)msg == imu_motion_distance)
-	{	
+	{
 
-		// return 0;
+		return 0;
 		*p++ = SERIAL_DATAGRAM_START_CHR;
 		uint8_t *s = msg;
 		struct imu_motion_distance_t *distance = msg;
-		memset(p,0,128);
-		int8_t x,y;
+		memset(p, 0, 128);
+		int8_t x, y;
 		x = distance->x_distance;
 		y = distance->y_distance;
 		size_t len = sprintf(p, "%02X %02X%02X\r\n05 %04X %04X %04X %04X %04X \n",
 							 *s, (uint8_t)y, (uint8_t)x,
 							 distance->angle[0], distance->angle[1], distance->angle[2], distance->angle[3], distance->angle[4]);
-
 
 		// if(strlen(buf) > 100)
 		// {
@@ -229,22 +243,23 @@ int host_uart_datagram_send(void *msg, const size_t msg_len)
 }
 
 #include "usart.h"
-void uart_tx(void *buf  ,uint32_t len)
+void uart_tx(void *buf, uint32_t len)
 {
-	if(len >= 64)
-	{
-		return ;
-	}
+	// if(len >= 64)
+	// {
+	// 	return ;
+	// }
 
 	HAL_UART_Transmit(&huart1, buf, len, 10);
 }
 
 int send_raw_datagram_to_serial(const void *raw_datagram, size_t raw_datagram_len)
 {
+#if 1
 	taskENTER_CRITICAL();
-
-    uart_tx(raw_datagram,raw_datagram_len);
+	uart_tx(raw_datagram, raw_datagram_len);
 	taskEXIT_CRITICAL();
+#else
 	// struct AsyncIoResult_t IoResult = {0, osThreadGetId()};
 	// osStatus status = StartUartTx(1, raw_datagram, raw_datagram_len, NotifyAsyncIoFinished, &IoResult);
 	// if (status != osOK)
@@ -253,6 +268,8 @@ int send_raw_datagram_to_serial(const void *raw_datagram, size_t raw_datagram_le
 	// }
 	// osSignalWait(SIG_SERVER_FINISHED, osWaitForever); // osWaitForever
 	// TODO: Wait time should not be 'forever'. if it's out of time, should Call StopUartXX.
+
+#endif
 	return 1;
 }
 
