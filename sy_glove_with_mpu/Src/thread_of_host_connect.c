@@ -27,7 +27,7 @@ osThreadDef(host_uart_tx, thread_of_host_uart_tx, osPriorityHigh, 0, 128); // th
 /*uart recvive from host thread*/
 void thread_of_host_uart_rx(void const *argument);						   // thread function
 osThreadId tid_thread_of_host_uart_rx;									   // thread id
-osThreadDef(host_uart_rx, thread_of_host_uart_rx, osPriorityHigh, 0, 128); // thread object
+osThreadDef(host_uart_rx, thread_of_host_uart_rx, osPriorityHigh, 0, 256); // thread object
 
 int init_thread_of_host_uart_tx(void)
 {
@@ -88,18 +88,62 @@ void thread_of_host_uart_rx(void const *argument)
 		size_t buf_size;
 		size_t skipped_count;
 
+		uint8_t buf_tx[24] = {0};
 		while (1)
 		{
 			int ret = get_raw_datagram_from_serial(buf, sizeof buf, &buf_size, &skipped_count);
 
-			uart_tx(buf,buf_size);
+			uart_tx(buf, buf_size);
 
-			memcpy(datagram,buf,buf_size);
+			// memcpy(datagram, buf, buf_size);
 			// sscanf((char *)buf, "%02X", (uint8_t *)datagram);
+			datagram[0] = buf[1];
+			datagram[1] = buf[3];
 
-			uart_tx(datagram,buf_size);
+			uart_tx(datagram, buf_size);
+
+			struct uart_head_t *head = (const struct uart_head_t *)datagram;
 
 
+
+			if (head->type >= 65 && head->type <= 70)
+			{
+				head->type -= 55;
+			}
+			else if (head->type >= 48 && head->type <= 57)
+			{
+				head->type -= 48;
+			}
+			if (head->body_len >= 65 && head->body_len <= 70)
+			{
+				head->body_len -= 55;
+			}
+			if (head->body_len >= 48 && head->body_len <= 57)
+			{
+				head->body_len -= 48;
+			}
+
+
+
+			sprintf(buf_tx, "\r\n%d,%d\r\n", head->type, head->body_len);
+			uart_tx(buf_tx, 24);
+
+			switch ((head->type))
+			{
+			case calibration_cmd:
+				// uart_tx("yes", sizeof("yes"));
+
+				osSignalSet(tid_thread_of_sensor_calibration, SIG_USER_0);
+				break;
+			}
+			for (size_t i = 0; i < 1; i++)
+			{
+				if (head->type == msg_process_func_list[i].id)
+				{
+					// uart_tx("yes2", sizeof("yes2"));
+					serial_datagram_msg_process_common_func(datagram, datagram_len, msg_process_func_list[i].ptr);
+				}
+			}
 		}
 
 		while (0)
@@ -131,11 +175,12 @@ void thread_of_host_uart_rx(void const *argument)
 
 			size_t i = 0;
 			const struct uart_head_t *head = (const struct uart_head_t *)datagram;
-			// switch(head->type){
-			// 	case calibration_cmd:
-			// 		osSignalSet(tid_thread_of_sensor_calibration,SIG_USER_0);
-			// 	break;
-			// }
+			switch (head->type)
+			{
+			case calibration_cmd:
+				osSignalSet(tid_thread_of_sensor_calibration, SIG_USER_0);
+				break;
+			}
 			for (i = 0; i < 1; i++)
 			{
 				if (head->type == msg_process_func_list[i].id)
