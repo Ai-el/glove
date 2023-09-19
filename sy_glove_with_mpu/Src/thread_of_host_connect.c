@@ -82,7 +82,7 @@ void thread_of_host_uart_rx(void const *argument)
 
 	for (;;)
 	{
-		uint8_t datagram[128];
+		uint8_t datagram[128]={0};
 		uint8_t buf[128];
 		size_t datagram_len;
 		size_t buf_size;
@@ -93,18 +93,13 @@ void thread_of_host_uart_rx(void const *argument)
 		{
 			int ret = get_raw_datagram_from_serial(buf, sizeof buf, &buf_size, &skipped_count);
 
-			uart_tx(buf, buf_size);
+			struct serial_calibration_cmd_t * p = (struct serial_calibration_cmd_t *)datagram;
 
-			// memcpy(datagram, buf, buf_size);
-			// sscanf((char *)buf, "%02X", (uint8_t *)datagram);
-			datagram[0] = buf[1];
-			datagram[1] = buf[3];
-
-			uart_tx(datagram, buf_size);
+			p->head.type = buf[1];
+			p->head.body_len = 4;
+			p->cmd = buf[3];
 
 			struct uart_head_t *head = (const struct uart_head_t *)datagram;
-
-
 
 			if (head->type >= 65 && head->type <= 70)
 			{
@@ -114,25 +109,25 @@ void thread_of_host_uart_rx(void const *argument)
 			{
 				head->type -= 48;
 			}
-			if (head->body_len >= 65 && head->body_len <= 70)
+			if (buf[3] >= 65 && buf[3] <= 70)
 			{
-				head->body_len -= 55;
+				buf[3] -= 55;
+				p->cmd = buf[3];
+
 			}
-			if (head->body_len >= 48 && head->body_len <= 57)
+			if (buf[3] >= 48 && buf[3] <= 57)
 			{
-				head->body_len -= 48;
+				buf[3] -= 48;
+				p->cmd = buf[3];
 			}
 
-
-
-			sprintf(buf_tx, "\r\n%d,%d\r\n", head->type, head->body_len);
-			uart_tx(buf_tx, 24);
+			// sprintf(buf_tx, "\r\n%d,%d\r\n", head->type, head->body_len);
+			// uart_tx(buf_tx, 24);
 
 			switch ((head->type))
 			{
 			case calibration_cmd:
 				// uart_tx("yes", sizeof("yes"));
-
 				osSignalSet(tid_thread_of_sensor_calibration, SIG_USER_0);
 				break;
 			}
@@ -141,11 +136,13 @@ void thread_of_host_uart_rx(void const *argument)
 				if (head->type == msg_process_func_list[i].id)
 				{
 					// uart_tx("yes2", sizeof("yes2"));
-					serial_datagram_msg_process_common_func(datagram, datagram_len, msg_process_func_list[i].ptr);
+					// sprintf(buf_tx, "\r\n PUT = %x\r\n", msg_process_func_list[i].ptr);
+					// uart_tx(buf_tx, 24);
+					serial_datagram_msg_process_common_func(datagram, 4, msg_process_func_list[i].ptr);
 				}
 			}
 		}
-
+#if 0
 		while (0)
 		{
 			int ret = get_raw_datagram_from_serial(buf, sizeof buf, &buf_size, &skipped_count);
@@ -178,6 +175,8 @@ void thread_of_host_uart_rx(void const *argument)
 			switch (head->type)
 			{
 			case calibration_cmd:
+			 		sprintf(buf_tx, "on");
+					 uart_tx(buf_tx, 24);
 				osSignalSet(tid_thread_of_sensor_calibration, SIG_USER_0);
 				break;
 			}
@@ -185,10 +184,12 @@ void thread_of_host_uart_rx(void const *argument)
 			{
 				if (head->type == msg_process_func_list[i].id)
 				{
-					serial_datagram_msg_process_common_func(datagram, datagram_len, msg_process_func_list[i].ptr);
+					
+					 serial_datagram_msg_process_common_func(datagram, datagram_len, msg_process_func_list[i].ptr);
 				}
 			}
 		}
+#endif
 	}
 }
 
@@ -230,7 +231,7 @@ int host_uart_datagram_send(void *msg, const size_t msg_len)
 	if (*(uint8_t *)msg == imu_motion_distance)
 	{
 
-		return 0;
+		// return 0;
 		*p++ = SERIAL_DATAGRAM_START_CHR;
 		uint8_t *s = msg;
 		struct imu_motion_distance_t *distance = msg;
@@ -241,17 +242,6 @@ int host_uart_datagram_send(void *msg, const size_t msg_len)
 		size_t len = sprintf(p, "%02X %02X%02X\r\n05 %04X %04X %04X %04X %04X \n",
 							 *s, (uint8_t)y, (uint8_t)x,
 							 distance->angle[0], distance->angle[1], distance->angle[2], distance->angle[3], distance->angle[4]);
-
-		// if(strlen(buf) > 100)
-		// {
-		// 	return 0; // too long datagram
-		// }
-		// if ((uint8_t *)s != (uint8_t *)msg + msg_len)
-		// {
-		// 	return 0; // too long datagram
-		// }
-		// p--;
-		// *p++ = SERIAL_DATAGRAM_END_CHR;
 
 		ret = send_raw_datagram_to_serial(buf, len);
 
@@ -336,7 +326,12 @@ int get_raw_datagram_from_serial(uint8_t *raw_datagram, size_t max_size, size_t 
 		{
 			continue;
 		}
-		osSignalWait(SIG_SERVER_FINISHED, osWaitForever);
+		osEvent evt = osSignalWait(SIG_SERVER_FINISHED, 1000);
+		if( evt.status == osEventTimeout)
+		{
+			StopUartRx(1);
+			continue;
+		}
 		// TODO: Wait time should not be 'forever'. if it's out of time, should Call StopUartXX.
 		len = IoResult.IoResult;
 		if (len < 2)

@@ -80,11 +80,14 @@ void thread_of_sensor_calibration(void const *argument)
 #if 1
 		for (;;)
 		{
-
+			uint8_t buf_tx[24];
+			
 			osEvent event = osMailGet(mail_queue_id_for_cmd_calibration_cmd, 0);
 			if (event.status == osEventMail)
 			{
-				struct serial_calibration_cmd_t *s = event.value.p;
+				sprintf(buf_tx, "\r\n%x\r\n", &mail_queue_id_for_cmd_calibration_cmd);
+			    uart_tx(buf_tx, 24);
+			 	struct serial_calibration_cmd_t *s = event.value.p;
 				if (s)
 				{
 					is_calibration = s->cmd;
