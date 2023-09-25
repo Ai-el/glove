@@ -204,7 +204,6 @@ void StartDefaultTask(void const * argument)
 		// uint8_t string[] = "hello\r\n";
 		// HAL_UART_Transmit(&huart1, string, sizeof(string), 10);
 
-    // MPU_PRINT();
     osDelay(100);
 //		user_signal_info_t timer_arg = {osThreadGetId(), SIG_USER_TIMER};
 //		osTimerDef(myTimer01, Callback01);
