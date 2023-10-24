@@ -186,7 +186,7 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_THREADS */
 
 }
-
+#include "protocol.h"
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
   * @brief  Function implementing the defaultTask thread.
@@ -204,6 +204,21 @@ void StartDefaultTask(void const * argument)
 		// uint8_t string[] = "hello\r\n";
 		// HAL_UART_Transmit(&huart1, string, sizeof(string), 10);
 
+
+
+      // int32_t data_temp[2];
+			// 	data_temp[0] = 700;
+			// 	data_temp[1] = 200;
+			// 	int32_t TEMP_T = 50;
+			// 	set_computer_value(SEND_PERIOD_CMD,CURVES_CH1,&TEMP_T,1);
+			// 	set_computer_value(SEND_START_CMD,NULL,START_CMD,0);
+
+      //   set_computer_value(SET_TARGET_CMD,CURVES_CH2,&data_temp[1],1);
+			// 	set_computer_value(SEND_FACT_CMD,CURVES_CH2,&data_temp[1],1);
+				
+      //   set_computer_value(SEND_TARGET_CMD,CURVES_CH1,&data_temp[0],1);
+			// 	set_computer_value(SEND_FACT_CMD,CURVES_CH1,&data_temp[0],1);
+			
     osDelay(100);
 //		user_signal_info_t timer_arg = {osThreadGetId(), SIG_USER_TIMER};
 //		osTimerDef(myTimer01, Callback01);

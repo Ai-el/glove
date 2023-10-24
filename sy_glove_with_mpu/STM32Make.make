@@ -65,8 +65,10 @@ Middlewares/Third_Party/FreeRTOS/Source/timers.c \
 Middlewares/Third_Party/motion_driver-5.1.3/core/driver/eMPL/inv_mpu.c \
 Middlewares/Third_Party/motion_driver-5.1.3/core/driver/eMPL/inv_mpu_dmp_motion_driver.c \
 Middlewares/Third_Party/motion_driver-5.1.3/core/driver/mpu6050_io.c \
+Middlewares/protocol/protocol.c \
 Src/MPL_task.c \
 Src/adc.c \
+Src/algo.c \
 Src/dma.c \
 Src/freertos.c \
 Src/gpio.c \
@@ -171,6 +173,7 @@ C_INCLUDES =  \
 -IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3 \
 -IMiddlewares/Third_Party/motion_driver-5.1.3/core/driver \
 -IMiddlewares/Third_Party/motion_driver-5.1.3/core/driver/eMPL \
+-IMiddlewares/protocol \
 -Icommon/Inc
 
 
@@ -188,7 +191,7 @@ CXXFLAGS += -g -gdwarf -ggdb
 endif
 
 # Add additional flags
-CFLAGS += -Wall -fdata-sections -ffunction-sections 
+CFLAGS += -Wall -fdata-sections -ffunction-sections -u_printf_float 
 ASFLAGS += -Wall -fdata-sections -ffunction-sections 
 CXXFLAGS += 
 

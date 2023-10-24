@@ -37,7 +37,8 @@ cFlags:
   - -Wall
   - -fdata-sections
   - -ffunction-sections
-
+  - -u_printf_float 
+  
 cxxFlags: []
 assemblyFlags: 
   - -Wall
@@ -78,6 +79,7 @@ includeDirectories:
   - common/Inc/**
   - Middlewares/Third_Party/motion_driver-5.1.3/core/driver/eMPL/*.h
   - Middlewares/Third_Party/motion_driver-5.1.3/core/driver/*.h
+  - Middlewares/protocol/*.h
 
 # Files that should be included in the compilation.
 # If a CubeMX makefile is present it will automatically include the  c and cpp/cxx files from that makefile.
@@ -99,6 +101,7 @@ sourceFiles:
   - Middlewares/Third_Party/motion_driver-5.1.3/core/driver/mpu6050_io.c
   - Middlewares/Third_Party/motion_driver-5.1.3/core/driver/eMPL/inv_mpu_dmp_motion_driver.c
   - Middlewares/Third_Party/motion_driver-5.1.3/core/driver/eMPL/inv_mpu.c
+  - Middlewares/protocol/protocol.c
 
 
 # When no makefile is present it will show a warning pop-up.

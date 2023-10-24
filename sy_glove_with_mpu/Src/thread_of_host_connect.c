@@ -27,7 +27,7 @@ osThreadDef(host_uart_tx, thread_of_host_uart_tx, osPriorityHigh, 0, 128); // th
 /*uart recvive from host thread*/
 void thread_of_host_uart_rx(void const *argument);						   // thread function
 osThreadId tid_thread_of_host_uart_rx;									   // thread id
-osThreadDef(host_uart_rx, thread_of_host_uart_rx, osPriorityHigh, 0, 256); // thread object
+osThreadDef(host_uart_rx, thread_of_host_uart_rx, osPriorityHigh, 0, 128); // thread object
 
 int init_thread_of_host_uart_tx(void)
 {
@@ -211,7 +211,7 @@ void *SerialDatagramEvtAlloc(size_t size)
 
 int SerialDatagramEvtSend(void *ptr)
 {
-	// 这部分不知道出了什么错误，导致其单片机死机
+
 	osStatus status = osMailPut(mail_queue_id_for_host_tx, ptr);
 	// osStatus status = osErrorOS;//= osMailPut(mail_queue_id_for_host_tx, ptr);
 	return status == osOK;
@@ -239,10 +239,16 @@ int host_uart_datagram_send(void *msg, const size_t msg_len)
 		int8_t x, y;
 		x = distance->x_distance;
 		y = distance->y_distance;
+
 		size_t len = sprintf(p, "%02X %02X%02X\r\n05 %04X %04X %04X %04X %04X \n",
 							 *s, (uint8_t)y, (uint8_t)x,
 							 distance->angle[0], distance->angle[1], distance->angle[2], distance->angle[3], distance->angle[4]);
-
+		
+		// size_t len = sprintf(p, "\r\n%d, %d, %d, %d, %d \r\n",
+		// 					 distance->angle[0], distance->angle[1], distance->angle[2], distance->angle[3], distance->angle[4]);
+		// size_t len = sprintf(p, "\r\nΔx=%d, Δy=%d \r\n",
+		// 					(uint8_t)y, (uint8_t)x);
+		
 		ret = send_raw_datagram_to_serial(buf, len);
 
 		return ret;

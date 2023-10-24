@@ -1,5 +1,4 @@
 #include "thread_of_sensor_calibration.h"
-
 #define EVENT_LOOP_TIME_IN_MILLI_SECOND 50
 extern ADC_HandleTypeDef hadc1;
 __IO float ADC_ConvertedValueLocal[16];
@@ -34,7 +33,13 @@ int init_thread_of_sensor_calibration(void)
 
 	tid_thread_of_sensor_calibration = osThreadCreate(osThread(sensor_calibration), NULL);
 	if (!tid_thread_of_sensor_calibration)
+	{
+		// uint8_t buf[10];
+		// int len =sprintf(buf,"init error");
+		
 		return (-1);
+	}
+		
 
 	return (0);
 }
@@ -85,8 +90,8 @@ void thread_of_sensor_calibration(void const *argument)
 			osEvent event = osMailGet(mail_queue_id_for_cmd_calibration_cmd, 0);
 			if (event.status == osEventMail)
 			{
-				sprintf(buf_tx, "\r\n%x\r\n", &mail_queue_id_for_cmd_calibration_cmd);
-			    uart_tx(buf_tx, 24);
+				// sprintf(buf_tx, "\r\n%x\r\n", &mail_queue_id_for_cmd_calibration_cmd);
+			    // uart_tx(buf_tx, 24);
 			 	struct serial_calibration_cmd_t *s = event.value.p;
 				if (s)
 				{
@@ -133,7 +138,7 @@ void thread_of_sensor_calibration(void const *argument)
 						adc_transformed_resualt[i] = sensor_calibration_resualt.max[i];
 					}
 
-					uint16_t diff = sensor_calibration_resualt.max[i] - sensor_calibration_resualt.min[i];
+					uint16_t diff = sensor_calibration_resualt.max[i] - sensor_calibration_resualt.min[i];//差值
 					if (adc_transformed_resualt[i] < (0.35 * diff + sensor_calibration_resualt.min[i]))
 					{
 						adc_transformed_resualt[i] = ((adc_transformed_resualt[i] - sensor_calibration_resualt.min[i]) * 90) / (0.35 * diff);
@@ -143,6 +148,7 @@ void thread_of_sensor_calibration(void const *argument)
 						adc_transformed_resualt[i] = (((adc_transformed_resualt[i] - sensor_calibration_resualt.min[i] - 0.35 * diff) * 90) / (0.65 * diff)) + 90;
 					}
 					adc_transformed_resualt[i] = 180 - adc_transformed_resualt[i];
+					
 				}
 			}
 
