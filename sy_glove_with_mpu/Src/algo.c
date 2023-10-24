@@ -2,7 +2,7 @@
 #include "algo.h"
 
 
-#define alpha_k 0.15//0.6755//越大效果越差
+#define alpha_k 0.675//0.6755//越大效果越差
 LowPassFilter_t LowPassFilter_pitch={
     .alpha = alpha_k,
     .prevValue = 0,
@@ -167,4 +167,161 @@ float iirFilter_y(float newSample) {
     buffer[0] = newSample;
 
     return output;
+}
+
+
+
+ KalmanFilter kf_x = {
+        .Q_angle = 0.001f,
+        .Q_bias = 0.003f,
+        .R_measure = 0.03f,
+        .angle = 0.0f,
+        .bias = 0.0f,
+        .P = {{0.0f, 0.0f}, {0.0f, 0.0f}}
+    };
+
+     KalmanFilter kf_y = {
+        .Q_angle = 0.001f,
+        .Q_bias = 0.003f,
+        .R_measure = 0.03f,
+        .angle = 0.0f,
+        .bias = 0.0f,
+        .P = {{0.0f, 0.0f}, {0.0f, 0.0f}}
+    };
+
+         KalmanFilter kf_z = {
+        .Q_angle = 0.001f,
+        .Q_bias = 0.003f,
+        .R_measure = 0.03f,
+        .angle = 0.0f,
+        .bias = 0.0f,
+        .P = {{0.0f, 0.0f}, {0.0f, 0.0f}}
+    };
+
+    float kalman_filter_update(KalmanFilter *filter, float measurement, float dt) {
+    // 预测步骤
+    filter->angle += dt * (filter->bias);
+    filter->P[0][0] += dt * (dt * filter->P[1][1] - filter->P[0][1] - filter->P[1][0] + filter->Q_angle);
+    filter->P[0][1] -= dt * filter->P[1][1];
+    filter->P[1][0] -= dt * filter->P[1][1];
+    filter->P[1][1] += filter->Q_bias * dt;
+  
+    // 更新步骤
+    float y = measurement - filter->angle;
+    float S = filter->P[0][0] + filter->R_measure;
+    float K[2];
+    K[0] = filter->P[0][0] / S;
+    K[1] = filter->P[1][0] / S;
+  
+    filter->angle += K[0] * y;
+    filter->bias += K[1] * y;
+    float P00_temp = filter->P[0][0];
+    float P01_temp = filter->P[0][1];
+  
+    filter->P[0][0] -= K[0] * P00_temp;
+    filter->P[0][1] -= K[0] * P01_temp;
+    filter->P[1][0] -= K[1] * P00_temp;
+    filter->P[1][1] -= K[1] * P01_temp;
+  
+    return filter->angle;
+}
+
+
+
+
+
+
+
+
+
+//********************************************************************************************************
+#define N 3  // 滤波器阶数
+#define SAMPLING_RATE 1000.0  // 采样频率，单位为 Hz
+#define CUTOFF_FREQUENCY 150.0  // 截止频率，单位为 Hz
+#define pi 3.14159
+float butterworthFilter_x(float inputSample) {
+    static float input[N+1] = {0};
+    static float output[N+1] = {0};
+    static float coefficients[N+1] = {0};
+    static int initialized = 0;
+    
+    if (!initialized) {
+        // 初始化滤波器参数，这部分只会执行一次
+        float wc = 2.0f * pi * CUTOFF_FREQUENCY / SAMPLING_RATE;
+        float den = 1.0f;
+        for (int i = 0; i < N/2; i++) {
+            float c = 1.0f / tanf(wc * (2 * i + 1) / 2);
+            den *= c * c + sqrtf(2.0f) * c + 1;
+        }
+        float num = powf(wc, N);
+        float scale = num / den;
+        
+        // 设置滤波器系数
+        for (int i = 0; i <= N; i++) {
+            coefficients[i] = scale;
+        }
+        
+        initialized = 1;
+    }
+    
+    // 移位更新采样历史数据
+    for (int i = N; i > 0; i--) {
+        input[i] = input[i-1];
+    }
+    input[0] = inputSample;
+    
+    // 计算滤波输出
+    float outputSample = 0.0f;
+    for (int i = 0; i <= N; i++) {
+        outputSample += coefficients[i] * input[i];
+    }
+    for (int i = N; i > 0; i--) {
+        outputSample -= coefficients[i] * output[i];
+    }
+    output[0] = outputSample;
+    
+    return outputSample;
+}
+float butterworthFilter_y(float inputSample) {
+    static float input[N+1] = {0};
+    static float output[N+1] = {0};
+    static float coefficients[N+1] = {0};
+    static int initialized = 0;
+    
+    if (!initialized) {
+        // 初始化滤波器参数，这部分只会执行一次
+        float wc = 2.0f * pi * CUTOFF_FREQUENCY / SAMPLING_RATE;
+        float den = 1.0f;
+        for (int i = 0; i < N/2; i++) {
+            float c = 1.0f / tanf(wc * (2 * i + 1) / 2);
+            den *= c * c + sqrtf(2.0f) * c + 1;
+        }
+        float num = powf(wc, N);
+        float scale = num / den;
+        
+        // 设置滤波器系数
+        for (int i = 0; i <= N; i++) {
+            coefficients[i] = scale;
+        }
+        
+        initialized = 1;
+    }
+    
+    // 移位更新采样历史数据
+    for (int i = N; i > 0; i--) {
+        input[i] = input[i-1];
+    }
+    input[0] = inputSample;
+    
+    // 计算滤波输出
+    float outputSample = 0.0f;
+    for (int i = 0; i <= N; i++) {
+        outputSample += coefficients[i] * input[i];
+    }
+    for (int i = N; i > 0; i--) {
+        outputSample -= coefficients[i] * output[i];
+    }
+    output[0] = outputSample;
+    
+    return outputSample;
 }

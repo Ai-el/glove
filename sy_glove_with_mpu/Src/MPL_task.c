@@ -215,9 +215,29 @@ void Start_MPL_task(void const *argument)
 				Roll = data[1] * 1.0 / (1 << 16);
 				Yaw = data[2] * 1.0 / (1 << 16);
 
-				Pitch = lowPassFilter(&LowPassFilter_pitch, Pitch);
+				int32_t data_temp[4];
+				data_temp[0] = Pitch;
+				data_temp[1] = Roll;
+				// data_temp[2] = rep[0];
+				// data_temp[3] = rep[1];
+
+				// set_computer_value(SEND_FACT_CMD,CURVES_CH4,&data_temp[3],1);
+				// set_computer_value(SEND_FACT_CMD,CURVES_CH3,&data_temp[2],1);
+				set_computer_value(SEND_TARGET_CMD,CURVES_CH2,&data_temp[1],1);
+				set_computer_value(SEND_TARGET_CMD,CURVES_CH1,&data_temp[0],1);
+
+
+
+				Pitch = lowPassFilter(&LowPassFilter_pitch, Pitch);	
 				Roll = lowPassFilter(&LowPassFilter_roll, Roll);
 				Yaw = lowPassFilter(&LowPassFilter_yaw, Yaw);
+				
+
+				// Pitch = kalman_filter_update(&kf_x,Pitch,0.01);
+				// Roll = kalman_filter_update(&kf_y,Roll,0.01);
+				// Yaw = kalman_filter_update(&kf_z,Yaw,0.01);
+
+
 
 				int8_t rep[2];
 
@@ -241,7 +261,11 @@ void Start_MPL_task(void const *argument)
 
 				// rep[0] = iirFilter_x(rep[0]);
 				// rep[1] = iirFilter_x(rep[1]);
-
+				
+				rep[0] = butterworthFilter_x(rep[0]);
+				rep[1] = butterworthFilter_y(rep[1]);
+					// rep[0] = kalman_filter_update(&kf_x,rep[0],0.01);
+					// rep[1] = kalman_filter_update(&kf_y,rep[1],0.01);
 
 				// size_t len = sprintf(p, "Δx=%d \t Δy=%d \t Pitch=%.3f \t Roll=%.3f \tYaw=%.3f\r\n",
 				// 					 rep[0], rep[1],
@@ -255,7 +279,7 @@ void Start_MPL_task(void const *argument)
 				
 				// send_raw_datagram_to_serial(buf, len);
 
-				int32_t data_temp[4];
+				
 				data_temp[0] = Pitch;
 				data_temp[1] = Roll;
 				data_temp[2] = rep[0];
