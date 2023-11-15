@@ -196,14 +196,14 @@ void Start_MPL_task(void const *argument)
 			 * the body frame, q30. The orientation is set by the scalar passed
 			 * to dmp_set_orientation during initialization.
 			 */
-			count = osKernelSysTick();
+			// count = osKernelSysTick();
 
-			if (count - count_old < 40)
-			{
-				continue;
-			}
-
-			count_old = count;
+			// if (count - count_old < 40)
+			// {
+			// 	continue;
+			// }
+			// count_old = count;
+			
 			if (sensors & INV_WXYZ_QUAT && hal.report & PRINT_QUAT)
 			{
 				uint8_t buf[128] = {0};
@@ -221,23 +221,34 @@ void Start_MPL_task(void const *argument)
 				// data_temp[2] = rep[0];
 				// data_temp[3] = rep[1];
 
+				short accl[3];
+				uint32_t time=100;
+				mpu_get_accel_reg(accel,&time);
+
+				// accel[2] = butterworthFilter_y(accel[2]);
+
+				// data_temp[0] = (int32_t)accel[0]/100;
+				// data_temp[1] = (int32_t)accel[1]/100;
+				// data_temp[2] = (int32_t)accel[2]/100;//这个是y轴的瞬时加速度
+
+				
+				// set_computer_value(SEND_FACT_CMD,CURVES_CH1,&data_temp[0],1);
+				// set_computer_value(SEND_FACT_CMD,CURVES_CH2,&data_temp[1],1);
+				// set_computer_value(SEND_FACT_CMD,CURVES_CH3,&data_temp[2],1);
+
 				// set_computer_value(SEND_FACT_CMD,CURVES_CH4,&data_temp[3],1);
 				// set_computer_value(SEND_FACT_CMD,CURVES_CH3,&data_temp[2],1);
-				set_computer_value(SEND_TARGET_CMD,CURVES_CH2,&data_temp[1],1);
-				set_computer_value(SEND_TARGET_CMD,CURVES_CH1,&data_temp[0],1);
 
+				// set_computer_value(SEND_TARGET_CMD, CURVES_CH2, &data_temp[1], 1);
+				// set_computer_value(SEND_TARGET_CMD, CURVES_CH1, &data_temp[0], 1);
 
-
-				Pitch = lowPassFilter(&LowPassFilter_pitch, Pitch);	
+				Pitch = lowPassFilter(&LowPassFilter_pitch, Pitch);
 				Roll = lowPassFilter(&LowPassFilter_roll, Roll);
 				Yaw = lowPassFilter(&LowPassFilter_yaw, Yaw);
-				
 
 				// Pitch = kalman_filter_update(&kf_x,Pitch,0.01);
 				// Roll = kalman_filter_update(&kf_y,Roll,0.01);
 				// Yaw = kalman_filter_update(&kf_z,Yaw,0.01);
-
-
 
 				int8_t rep[2];
 
@@ -261,11 +272,13 @@ void Start_MPL_task(void const *argument)
 
 				// rep[0] = iirFilter_x(rep[0]);
 				// rep[1] = iirFilter_x(rep[1]);
-				
-				rep[0] = butterworthFilter_x(rep[0]);
-				rep[1] = butterworthFilter_y(rep[1]);
-					// rep[0] = kalman_filter_update(&kf_x,rep[0],0.01);
-					// rep[1] = kalman_filter_update(&kf_y,rep[1],0.01);
+
+				// rep[0] = butterworthFilter_x(rep[0]); //效果比较好
+				// rep[1] = butterworthFilter_y(rep[1]);
+
+
+				// rep[0] = kalman_filter_update(&kf_x,rep[0],0.01);
+				// rep[1] = kalman_filter_update(&kf_y,rep[1],0.01);
 
 				// size_t len = sprintf(p, "Δx=%d \t Δy=%d \t Pitch=%.3f \t Roll=%.3f \tYaw=%.3f\r\n",
 				// 					 rep[0], rep[1],
@@ -276,20 +289,17 @@ void Start_MPL_task(void const *argument)
 				// (int16_t)Pitch, abs((int16_t)((Pitch - ((int16_t)Pitch))*10000)),
 				// (int16_t)Roll, abs((int16_t)((Roll - ((int16_t)Roll))*10000)),
 				// (int16_t)Yaw,abs((int16_t)((Yaw - ((int16_t)Yaw))*10000)));
-				
+
 				// send_raw_datagram_to_serial(buf, len);
 
-				
-				data_temp[0] = Pitch;
-				data_temp[1] = Roll;
-				data_temp[2] = rep[0];
-				data_temp[3] = rep[1];
-
-				set_computer_value(SEND_FACT_CMD,CURVES_CH4,&data_temp[3],1);
-				set_computer_value(SEND_FACT_CMD,CURVES_CH3,&data_temp[2],1);
-				set_computer_value(SEND_FACT_CMD,CURVES_CH2,&data_temp[1],1);
-				set_computer_value(SEND_FACT_CMD,CURVES_CH1,&data_temp[0],1);
-
+				// data_temp[0] = Pitch;
+				// data_temp[1] = Yaw;
+				// data_temp[2] = rep[0];
+				// data_temp[3] = rep[1];
+				// set_computer_value(SEND_FACT_CMD, CURVES_CH4, &data_temp[3], 1);
+				// set_computer_value(SEND_FACT_CMD, CURVES_CH3, &data_temp[2], 1);
+				// set_computer_value(SEND_FACT_CMD, CURVES_CH2, &data_temp[1], 1);
+				// set_computer_value(SEND_FACT_CMD, CURVES_CH1, &data_temp[0], 1);
 
 				struct imu_motion_distance_t *distance = SerialDatagramEvtAlloc(sizeof(*distance));
 				if (distance)

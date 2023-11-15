@@ -239,6 +239,7 @@ float iirFilter_y(float newSample) {
 #define SAMPLING_RATE 1000.0  // 采样频率，单位为 Hz
 #define CUTOFF_FREQUENCY 150.0  // 截止频率，单位为 Hz
 #define pi 3.14159
+//线性滤波器
 float butterworthFilter_x(float inputSample) {
     static float input[N+1] = {0};
     static float output[N+1] = {0};
