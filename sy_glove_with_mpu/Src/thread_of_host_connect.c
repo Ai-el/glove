@@ -240,10 +240,14 @@ int host_uart_datagram_send(void *msg, const size_t msg_len)
 		x = distance->x_distance;
 		y = distance->y_distance;
 
-		size_t len = sprintf(p, "%02X %02X%02X\r\n05 %04X %04X %04X %04X %04X \n",
+		// size_t len = sprintf(p, "%02X %02X%02X\r\n05 %04X %04X %04X %04X %04X \n",
+		// 					 *s, (uint8_t)y, (uint8_t)x,
+		// 					 distance->angle[0], distance->angle[1], distance->angle[2], distance->angle[3], distance->angle[4]);
+		
+		size_t len = sprintf(p, "\r\n%02X %02X%02X\r\n\r\n%02X %02X%02X\r\n\r\n05 %04X %04X %04X %04X %04X \n",
+		                     *s, (uint8_t)y, (uint8_t)x,
 							 *s, (uint8_t)y, (uint8_t)x,
 							 distance->angle[0], distance->angle[1], distance->angle[2], distance->angle[3], distance->angle[4]);
-		
 		// size_t len = sprintf(p, "\r\n%d, %d, %d, %d, %d \r\n",
 		// 					 distance->angle[0], distance->angle[1], distance->angle[2], distance->angle[3], distance->angle[4]);
 		// size_t len = sprintf(p, "\r\nΔx=%d, Δy=%d \r\n",

@@ -223,8 +223,8 @@ void Start_MPL_task(void const *argument)
 
 				// set_computer_value(SEND_FACT_CMD,CURVES_CH4,&data_temp[3],1);
 				// set_computer_value(SEND_FACT_CMD,CURVES_CH3,&data_temp[2],1);
-				set_computer_value(SEND_TARGET_CMD,CURVES_CH2,&data_temp[1],1);
-				set_computer_value(SEND_TARGET_CMD,CURVES_CH1,&data_temp[0],1);
+				// set_computer_value(SEND_TARGET_CMD,CURVES_CH2,&data_temp[1],1);
+				// set_computer_value(SEND_TARGET_CMD,CURVES_CH1,&data_temp[0],1);
 
 
 
@@ -280,15 +280,15 @@ void Start_MPL_task(void const *argument)
 				// send_raw_datagram_to_serial(buf, len);
 
 				
-				data_temp[0] = Pitch;
-				data_temp[1] = Roll;
-				data_temp[2] = rep[0];
-				data_temp[3] = rep[1];
+				// data_temp[0] = Pitch;
+				// data_temp[1] = Roll;
+				// data_temp[2] = rep[0];
+				// data_temp[3] = rep[1];
 
-				set_computer_value(SEND_FACT_CMD,CURVES_CH4,&data_temp[3],1);
-				set_computer_value(SEND_FACT_CMD,CURVES_CH3,&data_temp[2],1);
-				set_computer_value(SEND_FACT_CMD,CURVES_CH2,&data_temp[1],1);
-				set_computer_value(SEND_FACT_CMD,CURVES_CH1,&data_temp[0],1);
+				// set_computer_value(SEND_FACT_CMD,CURVES_CH4,&data_temp[3],1);
+				// set_computer_value(SEND_FACT_CMD,CURVES_CH3,&data_temp[2],1);
+				// set_computer_value(SEND_FACT_CMD,CURVES_CH2,&data_temp[1],1);
+				// set_computer_value(SEND_FACT_CMD,CURVES_CH1,&data_temp[0],1);
 
 
 				struct imu_motion_distance_t *distance = SerialDatagramEvtAlloc(sizeof(*distance));
