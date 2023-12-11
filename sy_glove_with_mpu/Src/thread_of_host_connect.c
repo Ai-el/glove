@@ -223,7 +223,10 @@ void SerialDatagramEvtFree(void *ptr)
 }
 
 int host_uart_datagram_send(void *msg, const size_t msg_len)
-{
+{	
+
+	return 0;
+
 	uint8_t buf[128] = {0};
 	uint8_t *p = buf;
 	int ret;

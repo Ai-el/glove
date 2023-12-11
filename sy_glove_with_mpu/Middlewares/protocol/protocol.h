@@ -114,4 +114,19 @@ void set_computer_value(uint8_t cmd, uint8_t ch, void *data, uint8_t num);
 }
 #endif   
 
+
+#define CH_COUNT 10
+typedef struct vofa_t
+{
+  /* data */
+  float ch_data[CH_COUNT];
+  unsigned char tail[4];
+}vofa_justFloat_t;
+
+
+extern vofa_justFloat_t vofa_ser;
+uint8_t Vofa_update(float ch1, float ch2, float ch3, float ch4);
+
+
+
 #endif

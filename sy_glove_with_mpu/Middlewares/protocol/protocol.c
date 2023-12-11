@@ -1,18 +1,18 @@
 /**
-  ******************************************************************************
-  * @file    protocol.c
-  * @version V1.0
-  * @date    2020-xx-xx
-  * @brief   野火PID调试助手通讯协议解析
-  ******************************************************************************
-  * @attention
-  *
-  * 实验平台:野火 F407 开发板 
-  * 论坛    :http://www.firebbs.cn
-  * 淘宝    :https://fire-stm32.taobao.com
-  *
-  ******************************************************************************
-  */ 
+ ******************************************************************************
+ * @file    protocol.c
+ * @version V1.0
+ * @date    2020-xx-xx
+ * @brief   野火PID调试助手通讯协议解析
+ ******************************************************************************
+ * @attention
+ *
+ * 实验平台:野火 F407 开发板
+ * 论坛    :http://www.firebbs.cn
+ * 淘宝    :https://fire-stm32.taobao.com
+ *
+ ******************************************************************************
+ */
 
 #include "protocol.h"
 #include <string.h>
@@ -20,14 +20,13 @@
 // #include "./pid/bsp_pid.h"
 // #include "./tim/bsp_basic_tim.h"
 
-
 struct prot_frame_parser_t
 {
-    uint8_t *recv_ptr;
-    uint16_t r_oft;
-    uint16_t w_oft;
-    uint16_t frame_len;
-    uint16_t found_frame_head;
+  uint8_t *recv_ptr;
+  uint16_t r_oft;
+  uint16_t w_oft;
+  uint16_t frame_len;
+  uint16_t found_frame_head;
 };
 
 static struct prot_frame_parser_t parser;
@@ -35,21 +34,21 @@ static struct prot_frame_parser_t parser;
 static uint8_t recv_buf[PROT_FRAME_LEN_RECV];
 
 /**
-  * @brief 计算校验和
-  * @param ptr：需要计算的数据
-  * @param len：需要计算的长度
-  * @retval 校验和
-  */
-uint8_t check_sum(uint8_t init, uint8_t *ptr, uint8_t len )
+ * @brief 计算校验和
+ * @param ptr：需要计算的数据
+ * @param len：需要计算的长度
+ * @retval 校验和
+ */
+uint8_t check_sum(uint8_t init, uint8_t *ptr, uint8_t len)
 {
   uint8_t sum = init;
-  
-  while(len--)
+
+  while (len--)
   {
     sum += *ptr;
     ptr++;
   }
-  
+
   return sum;
 }
 
@@ -61,7 +60,7 @@ uint8_t check_sum(uint8_t init, uint8_t *ptr, uint8_t len )
  */
 static uint8_t get_frame_type(uint8_t *frame, uint16_t head_oft)
 {
-    return (frame[(head_oft + CMD_INDEX_VAL) % PROT_FRAME_LEN_RECV] & 0xFF);
+  return (frame[(head_oft + CMD_INDEX_VAL) % PROT_FRAME_LEN_RECV] & 0xFF);
 }
 
 /**
@@ -72,10 +71,10 @@ static uint8_t get_frame_type(uint8_t *frame, uint16_t head_oft)
  */
 static uint16_t get_frame_len(uint8_t *frame, uint16_t head_oft)
 {
-    return ((frame[(head_oft + LEN_INDEX_VAL + 0) % PROT_FRAME_LEN_RECV] <<  0) |
-            (frame[(head_oft + LEN_INDEX_VAL + 1) % PROT_FRAME_LEN_RECV] <<  8) |
-            (frame[(head_oft + LEN_INDEX_VAL + 2) % PROT_FRAME_LEN_RECV] << 16) |
-            (frame[(head_oft + LEN_INDEX_VAL + 3) % PROT_FRAME_LEN_RECV] << 24));    // 合成帧长度
+  return ((frame[(head_oft + LEN_INDEX_VAL + 0) % PROT_FRAME_LEN_RECV] << 0) |
+          (frame[(head_oft + LEN_INDEX_VAL + 1) % PROT_FRAME_LEN_RECV] << 8) |
+          (frame[(head_oft + LEN_INDEX_VAL + 2) % PROT_FRAME_LEN_RECV] << 16) |
+          (frame[(head_oft + LEN_INDEX_VAL + 3) % PROT_FRAME_LEN_RECV] << 24)); // 合成帧长度
 }
 
 /**
@@ -87,7 +86,7 @@ static uint16_t get_frame_len(uint8_t *frame, uint16_t head_oft)
  */
 static uint8_t get_frame_checksum(uint8_t *frame, uint16_t head_oft, uint16_t frame_len)
 {
-    return (frame[(head_oft + frame_len - 1) % PROT_FRAME_LEN_RECV]);
+  return (frame[(head_oft + frame_len - 1) % PROT_FRAME_LEN_RECV]);
 }
 
 /**
@@ -100,19 +99,19 @@ static uint8_t get_frame_checksum(uint8_t *frame, uint16_t head_oft, uint16_t fr
  */
 static int32_t recvbuf_find_header(uint8_t *buf, uint16_t ring_buf_len, uint16_t start, uint16_t len)
 {
-    uint16_t i = 0;
+  uint16_t i = 0;
 
-    for (i = 0; i < (len - 3); i++)
+  for (i = 0; i < (len - 3); i++)
+  {
+    if (((buf[(start + i + 0) % ring_buf_len] << 0) |
+         (buf[(start + i + 1) % ring_buf_len] << 8) |
+         (buf[(start + i + 2) % ring_buf_len] << 16) |
+         (buf[(start + i + 3) % ring_buf_len] << 24)) == FRAME_HEADER)
     {
-        if (((buf[(start + i + 0) % ring_buf_len] <<  0) |
-             (buf[(start + i + 1) % ring_buf_len] <<  8) |
-             (buf[(start + i + 2) % ring_buf_len] << 16) |
-             (buf[(start + i + 3) % ring_buf_len] << 24)) == FRAME_HEADER)
-        {
-            return ((start + i) % ring_buf_len);
-        }
+      return ((start + i) % ring_buf_len);
     }
-    return -1;
+  }
+  return -1;
 }
 
 /**
@@ -123,19 +122,19 @@ static int32_t recvbuf_find_header(uint8_t *buf, uint16_t ring_buf_len, uint16_t
  * @param   end: 结束位置
  * @return  为解析的数据长度
  */
-static int32_t recvbuf_get_len_to_parse(uint16_t frame_len, uint16_t ring_buf_len,uint16_t start, uint16_t end)
+static int32_t recvbuf_get_len_to_parse(uint16_t frame_len, uint16_t ring_buf_len, uint16_t start, uint16_t end)
 {
-    uint16_t unparsed_data_len = 0;
+  uint16_t unparsed_data_len = 0;
 
-    if (start <= end)
-        unparsed_data_len = end - start;
-    else
-        unparsed_data_len = ring_buf_len - start + end;
+  if (start <= end)
+    unparsed_data_len = end - start;
+  else
+    unparsed_data_len = ring_buf_len - start + end;
 
-    if (frame_len > unparsed_data_len)
-        return 0;
-    else
-        return unparsed_data_len;
+  if (frame_len > unparsed_data_len)
+    return 0;
+  else
+    return unparsed_data_len;
 }
 
 /**
@@ -148,18 +147,18 @@ static int32_t recvbuf_get_len_to_parse(uint16_t frame_len, uint16_t ring_buf_le
  * @return  void.
  */
 static void recvbuf_put_data(uint8_t *buf, uint16_t ring_buf_len, uint16_t w_oft,
-        uint8_t *data, uint16_t data_len)
+                             uint8_t *data, uint16_t data_len)
 {
-    if ((w_oft + data_len) > ring_buf_len)               // 超过缓冲区尾
-    {
-        uint16_t data_len_part = ring_buf_len - w_oft;     // 缓冲区剩余长度
+  if ((w_oft + data_len) > ring_buf_len) // 超过缓冲区尾
+  {
+    uint16_t data_len_part = ring_buf_len - w_oft; // 缓冲区剩余长度
 
-        /* 数据分两段写入缓冲区*/
-        memcpy(buf + w_oft, data, data_len_part);                         // 写入缓冲区尾
-        memcpy(buf, data + data_len_part, data_len - data_len_part);      // 写入缓冲区头
-    }
-    else
-        memcpy(buf + w_oft, data, data_len);    // 数据写入缓冲区
+    /* 数据分两段写入缓冲区*/
+    memcpy(buf + w_oft, data, data_len_part);                    // 写入缓冲区尾
+    memcpy(buf, data + data_len_part, data_len - data_len_part); // 写入缓冲区头
+  }
+  else
+    memcpy(buf + w_oft, data, data_len); // 数据写入缓冲区
 }
 
 /**
@@ -171,7 +170,7 @@ static void recvbuf_put_data(uint8_t *buf, uint16_t ring_buf_len, uint16_t w_oft
 
 static uint8_t protocol_frame_parse(uint8_t *data, uint16_t *data_len)
 {
-  #if 0
+#if 0
     uint8_t frame_type = CMD_NONE;
     uint16_t need_to_parse_len = 0;
     int16_t header_oft = -1;
@@ -259,7 +258,7 @@ static uint8_t protocol_frame_parse(uint8_t *data, uint16_t *data_len)
     parser.found_frame_head = 0;
 
     return frame_type;
-    #endif
+#endif
 }
 
 /**
@@ -270,8 +269,8 @@ static uint8_t protocol_frame_parse(uint8_t *data, uint16_t *data_len)
  */
 void protocol_data_recv(uint8_t *data, uint16_t data_len)
 {
-    recvbuf_put_data(parser.recv_ptr, PROT_FRAME_LEN_RECV, parser.w_oft, data, data_len);    // 接收数据
-    parser.w_oft = (parser.w_oft + data_len) % PROT_FRAME_LEN_RECV;                          // 计算写偏移
+  recvbuf_put_data(parser.recv_ptr, PROT_FRAME_LEN_RECV, parser.w_oft, data, data_len); // 接收数据
+  parser.w_oft = (parser.w_oft + data_len) % PROT_FRAME_LEN_RECV;                       // 计算写偏移
 }
 
 /**
@@ -281,12 +280,12 @@ void protocol_data_recv(uint8_t *data, uint16_t data_len)
  */
 int32_t protocol_init(void)
 {
-    memset(&parser, 0, sizeof(struct prot_frame_parser_t));
-    
-    /* 初始化分配数据接收与解析缓冲区*/
-    parser.recv_ptr = recv_buf;
-  
-    return 0;
+  memset(&parser, 0, sizeof(struct prot_frame_parser_t));
+
+  /* 初始化分配数据接收与解析缓冲区*/
+  parser.recv_ptr = recv_buf;
+
+  return 0;
 }
 
 /**
@@ -296,103 +295,124 @@ int32_t protocol_init(void)
  */
 int8_t receiving_process(void)
 {
-  uint8_t frame_data[128];         // 要能放下最长的帧
-  uint16_t frame_len = 0;          // 帧长度
-  uint8_t cmd_type = CMD_NONE;     // 命令类型
-  
-  while(1)
+  uint8_t frame_data[128];     // 要能放下最长的帧
+  uint16_t frame_len = 0;      // 帧长度
+  uint8_t cmd_type = CMD_NONE; // 命令类型
+
+  while (1)
   {
     cmd_type = protocol_frame_parse(frame_data, &frame_len);
     switch (cmd_type)
     {
-      case CMD_NONE:
-      {
-        return -1;
-      }
+    case CMD_NONE:
+    {
+      return -1;
+    }
 
-      case SET_P_I_D_CMD:
-      {
-        uint32_t temp0 = COMPOUND_32BIT(&frame_data[13]);
-        uint32_t temp1 = COMPOUND_32BIT(&frame_data[17]);
-        uint32_t temp2 = COMPOUND_32BIT(&frame_data[21]);
-        
-        float p_temp, i_temp, d_temp;
-        
-        p_temp = *(float *)&temp0;
-        i_temp = *(float *)&temp1;
-        d_temp = *(float *)&temp2;
-        
-        set_p_i_d(p_temp, i_temp, d_temp);    // 设置 P I D
-      }
-      break;
+    case SET_P_I_D_CMD:
+    {
+      uint32_t temp0 = COMPOUND_32BIT(&frame_data[13]);
+      uint32_t temp1 = COMPOUND_32BIT(&frame_data[17]);
+      uint32_t temp2 = COMPOUND_32BIT(&frame_data[21]);
 
-      case SET_TARGET_CMD:
-      {
-        int actual_temp = COMPOUND_32BIT(&frame_data[13]);    // 得到数据
-        
-        set_pid_target(actual_temp);    // 设置目标值
-      }
-      break;
-      
-      case START_CMD:
-      {
-        set_bldcm_enable();              // 启动电机
-      }
-      break;
-      
-      case STOP_CMD:
-      {
-        set_bldcm_disable();              // 停止电机
-      }
-      break;
-      
-      case RESET_CMD:
-      {
-        HAL_NVIC_SystemReset();          // 复位系统
-      }
-      break;
-      
-      case SET_PERIOD_CMD:
-      {
-        uint32_t temp = COMPOUND_32BIT(&frame_data[13]);     // 周期数
-        SET_BASIC_TIM_PERIOD(temp);                             // 设置定时器周期1~1000ms
-      }
-      break;
+      float p_temp, i_temp, d_temp;
 
-      default: 
-        return -1;
+      p_temp = *(float *)&temp0;
+      i_temp = *(float *)&temp1;
+      d_temp = *(float *)&temp2;
+
+      set_p_i_d(p_temp, i_temp, d_temp); // 设置 P I D
+    }
+    break;
+
+    case SET_TARGET_CMD:
+    {
+      int actual_temp = COMPOUND_32BIT(&frame_data[13]); // 得到数据
+
+      set_pid_target(actual_temp); // 设置目标值
+    }
+    break;
+
+    case START_CMD:
+    {
+      set_bldcm_enable(); // 启动电机
+    }
+    break;
+
+    case STOP_CMD:
+    {
+      set_bldcm_disable(); // 停止电机
+    }
+    break;
+
+    case RESET_CMD:
+    {
+      HAL_NVIC_SystemReset(); // 复位系统
+    }
+    break;
+
+    case SET_PERIOD_CMD:
+    {
+      uint32_t temp = COMPOUND_32BIT(&frame_data[13]); // 周期数
+      SET_BASIC_TIM_PERIOD(temp);                      // 设置定时器周期1~1000ms
+    }
+    break;
+
+    default:
+      return -1;
     }
   }
 }
 
 /**
-  * @brief 设置上位机的值
-  * @param cmd：命令
-  * @param ch: 曲线通道
-  * @param data：参数指针
-  * @param num：参数个数
-  * @retval 无
-  */
+ * @brief 设置上位机的值
+ * @param cmd：命令
+ * @param ch: 曲线通道
+ * @param data：参数指针
+ * @param num：参数个数
+ * @retval 无
+ */
 void set_computer_value(uint8_t cmd, uint8_t ch, void *data, uint8_t num)
 {
-  uint8_t sum = 0;    // 校验和
-  num *= 4;           // 一个参数 4 个字节
-  
-  static packet_head_t set_packet;
-  
-  set_packet.head = FRAME_HEADER;     // 包头 0x59485A53
-  set_packet.len  = 0x0B + num;      // 包长
-  set_packet.ch   = ch;              // 设置通道
-  set_packet.cmd  = cmd;             // 设置命令
-  
-  sum = sizeof(set_packet);
-  sum = check_sum(0, (uint8_t *)&set_packet, sizeof(set_packet));       // 计算包头校验和
-  sum = check_sum(sum, (uint8_t *)data, num);                           // 计算参数校验和
-  
+  uint8_t sum = 0; // 校验和
+  num *= 4;        // 一个参数 4 个字节
 
-  HAL_UART_Transmit(&UartHandle, (uint8_t *)&set_packet, sizeof(set_packet), 0xFFFFF);    // 发送数据头
-  HAL_UART_Transmit(&UartHandle, (uint8_t *)data, num, 0xFFFFF);                          // 发送参数
-  HAL_UART_Transmit(&UartHandle, (uint8_t *)&sum, sizeof(sum), 0xFFFFF);                  // 发送校验和
+  static packet_head_t set_packet;
+
+  set_packet.head = FRAME_HEADER; // 包头 0x59485A53
+  set_packet.len = 0x0B + num;    // 包长
+  set_packet.ch = ch;             // 设置通道
+  set_packet.cmd = cmd;           // 设置命令
+
+  sum = sizeof(set_packet);
+  sum = check_sum(0, (uint8_t *)&set_packet, sizeof(set_packet)); // 计算包头校验和
+  sum = check_sum(sum, (uint8_t *)data, num);                     // 计算参数校验和
+
+  HAL_UART_Transmit(&UartHandle, (uint8_t *)&set_packet, sizeof(set_packet), 0xFFFFF); // 发送数据头
+  HAL_UART_Transmit(&UartHandle, (uint8_t *)data, num, 0xFFFFF);                       // 发送参数
+  HAL_UART_Transmit(&UartHandle, (uint8_t *)&sum, sizeof(sum), 0xFFFFF);               // 发送校验和
+}
+
+vofa_justFloat_t vofa_ser = {
+    .tail = {0x00, 0x00, 0x80, 0x7f},
+    .ch_data = {0}};
+
+uint8_t Vofa_update(float ch1, float ch2, float ch3, float ch4)
+{
+  vofa_ser.ch_data[0] = ch1;
+  vofa_ser.ch_data[1] = ch2;
+  vofa_ser.ch_data[2] = ch3;
+  vofa_ser.ch_data[3] = ch4;
+  
+  HAL_Delay(5);
+
+  // uint8_t hand = 0x00;
+
+  // HAL_UART_Transmit(&UartHandle, '\n', sizeof('\n'), 0xFFFFF);
+
+  HAL_UART_Transmit(&UartHandle, (char *)&vofa_ser, sizeof(vofa_justFloat_t), 0xFFFFF);
+
+  HAL_Delay(100);
 }
 
 /**********************************************************************************************/

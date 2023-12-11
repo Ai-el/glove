@@ -11,7 +11,8 @@
         "cmsis_os.h": "c",
         "thread_of_sensor_calibration.h": "c",
         "freertosconfig.h": "c",
-        "reent.h": "c"
+        "reent.h": "c",
+        "protocol.h": "c"
     },
     "cortex-debug.armToolchainPath": "D:\\STM32FORVSCODE_TOOLS\\GCC-ARM-NONE-EABI-10.3-2021.10-WIN32\\GCC-ARM-NONE-EABI-10.3-2021.10\\BIN",
     "cortex-debug.openocdPath": "D:\\STM32FORVSCODE_TOOLS\\OPENOCD-20230202\\OPENOCD-20230202-0.12.0\\BIN\\OPENOCD.EXE"
